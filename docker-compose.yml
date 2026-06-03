@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  rag-app:
+    image: enterprise-rag:latest
+    container_name: enterprise-rag
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
