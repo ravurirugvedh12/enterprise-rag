@@ -1,0 +1,256 @@
+RAG, VECTOR EMBEDDINGS & SEMANTIC SEARCH
+Complete Interview Preparation Guide for Full Stack / AI Internships
+================================================================
+
+SECTION 1: WHAT IS RAG (RETRIEVAL-AUGMENTED GENERATION)?
+=========================================================
+
+Definition:
+RAG stands for Retrieval-Augmented Generation. It is an AI technique that combines
+information retrieval with text generation to produce accurate, context-aware answers
+from your own documents.
+
+How RAG Works - Step by Step:
+
+Step 1 - Document Ingestion:
+  - User uploads documents (PDF, DOCX, TXT)
+  - Documents are split into small chunks of text (e.g., 1000 characters each)
+  - Each chunk is converted into a vector embedding (a list of numbers)
+  - These vectors are stored in a vector database (e.g., ChromaDB, Pinecone, FAISS)
+
+Step 2 - User Query:
+  - User types a question (e.g., "What is the refund policy?")
+  - The question is also converted into a vector embedding
+
+Step 3 - Retrieval:
+  - The system searches the vector database for the most similar chunks
+  - It retrieves the top-k most relevant chunks (e.g., top 5)
+  - This is called semantic search or similarity search
+
+Step 4 - Generation:
+  - The retrieved chunks are passed to a Large Language Model (LLM) as context
+  - The LLM reads the context + question and generates a precise answer
+  - The answer is grounded in your actual documents, reducing hallucination
+
+Why RAG is Important:
+  - LLMs have a knowledge cutoff date and don't know your private data
+  - RAG allows AI to answer questions from YOUR specific documents
+  - It reduces "hallucination" because answers come from real documents
+  - No need to retrain or fine-tune the entire LLM
+  - Cost-effective and fast to implement
+
+RAG vs Fine-tuning:
+  - Fine-tuning: Retraining the model on new data (expensive, slow)
+  - RAG: Keeping the model same, but giving it relevant context at query time (cheap, fast)
+  - RAG is preferred for document-based Q&A systems
+
+Real-World Applications of RAG:
+  - Customer support chatbots that answer from product manuals
+  - Legal document search systems
+  - Medical knowledge bases for doctors
+  - Enterprise knowledge management systems
+  - Code documentation assistants
+
+Tech Stack Used in a Typical RAG System:
+  - Document Loaders: LangChain, PyPDF, Docx2txt
+  - Text Splitters: RecursiveCharacterTextSplitter
+  - Embedding Models: OpenAI embeddings, nomic-embed-text, sentence-transformers
+  - Vector Databases: ChromaDB, FAISS, Pinecone, Weaviate, Qdrant
+  - LLMs: GPT-4, Gemini, LLaMA, Mistral, Qwen
+  - Frameworks: LangChain, LlamaIndex, Haystack
+  - Backend: FastAPI, Flask, Django
+  - Frontend: React, HTML/CSS/JS
+
+
+SECTION 2: SEMANTIC SEARCH VS KEYWORD SEARCH
+=============================================
+
+Keyword Search (Traditional):
+  - Also called lexical search or full-text search
+  - Looks for exact word matches in documents
+  - Example: Search "bank" finds only documents with the word "bank"
+  - Tools: Elasticsearch (BM25), SQL LIKE queries, CTRL+F
+  - Fast and simple but limited
+
+Problems with Keyword Search:
+  - Cannot understand meaning or intent
+  - Misses synonyms: "car" won't match "automobile"
+  - Fails with typos
+  - No understanding of context
+  - Searches for "apple" returns both the fruit and the company
+
+Semantic Search (Modern AI-based):
+  - Understands the MEANING and INTENT behind a query
+  - Uses vector embeddings to find conceptually similar content
+  - Example: Search "vehicle" finds documents about cars, bikes, trucks
+  - Even works across languages
+  - Returns results by meaning similarity, not exact word match
+
+How Semantic Search Works:
+  1. Both query and documents are converted to embeddings (vectors)
+  2. Similarity is calculated using cosine similarity or dot product
+  3. Most similar documents are returned as results
+
+Key Differences Table:
+
+Feature               | Keyword Search      | Semantic Search
+----------------------|---------------------|------------------
+Matching              | Exact word match    | Meaning/concept match
+Synonyms              | Not handled         | Handled automatically
+Speed                 | Very fast           | Slightly slower
+Understanding         | No NLU              | Deep NLU
+Example match         | "dog" = "dog"       | "dog" ≈ "puppy", "canine"
+Use Case              | Simple text search  | AI-powered Q&A, RAG
+Storage               | Inverted index      | Vector database
+Algorithm             | BM25, TF-IDF        | Cosine similarity
+
+When to Use Keyword Search:
+  - Exact product code lookup
+  - Log file searching
+  - Simple database queries
+
+When to Use Semantic Search:
+  - AI chatbots and Q&A systems
+  - Document similarity search
+  - Recommendation systems
+  - RAG pipelines
+
+Hybrid Search:
+  - Combines both keyword and semantic search
+  - Best of both worlds
+  - Used in production systems for maximum accuracy
+
+
+SECTION 3: HOW VECTOR EMBEDDINGS WORK
+=======================================
+
+What is a Vector Embedding?
+  - A vector embedding is a list of numbers (floats) that represents
+    the meaning of a piece of text in mathematical space
+  - Example: "Hello World" might become [0.23, -0.14, 0.87, 0.03, ...]
+  - Similar meanings → similar number lists (vectors)
+  - Typically 384 to 1536 dimensions (length of the list)
+
+Intuition:
+  - Think of it like GPS coordinates
+  - Just as (28.6°N, 77.2°E) represents Delhi on a map
+  - A vector represents a word/sentence in "meaning space"
+  - Words with similar meanings are "close" to each other in this space
+  - "King" - "Man" + "Woman" ≈ "Queen" (famous word2vec example)
+
+How Embeddings are Created:
+  1. Text is fed into a neural network (transformer model)
+  2. The model processes the text through multiple layers
+  3. The final layer outputs a fixed-size vector
+  4. This vector captures semantic meaning, context, and relationships
+
+Popular Embedding Models:
+  - OpenAI: text-embedding-3-small (1536 dimensions)
+  - Google: text-embedding-004
+  - Open Source: nomic-embed-text, all-MiniLM-L6-v2, BAAI/bge-base
+  - Sentence Transformers library (free, local)
+
+Similarity Calculation:
+  - Cosine Similarity: Measures the angle between two vectors
+    - Range: -1 to 1 (1 = identical, 0 = unrelated, -1 = opposite)
+    - Formula: cos(θ) = (A·B) / (|A| × |B|)
+  - Dot Product: Faster but less accurate for different length vectors
+  - Euclidean Distance: Straight-line distance between vectors
+
+Example of Similarity Scores:
+  - "dog" and "puppy"      → similarity: 0.92 (very similar)
+  - "dog" and "cat"        → similarity: 0.78 (related)
+  - "dog" and "car"        → similarity: 0.21 (unrelated)
+  - "dog" and "canine"     → similarity: 0.95 (almost identical meaning)
+
+Vector Databases:
+  - Special databases optimized for storing and searching vectors
+  - Support fast Approximate Nearest Neighbor (ANN) search
+  - Popular options:
+    - ChromaDB: Free, open-source, great for local/small projects
+    - FAISS: Facebook's library, very fast, used in production
+    - Pinecone: Cloud-based, managed, enterprise-grade
+    - Weaviate: Open-source, supports hybrid search
+    - Qdrant: Rust-based, very performant
+    - pgvector: PostgreSQL extension for vectors
+
+Step-by-Step Embedding Pipeline in RAG:
+  1. Load document: "The cat sat on the mat"
+  2. Split into chunks: ["The cat sat", "on the mat"]
+  3. Embed chunk 1: [0.12, -0.34, 0.87, ...]  (384 numbers)
+  4. Embed chunk 2: [0.09, -0.31, 0.82, ...]  (384 numbers)
+  5. Store in ChromaDB with metadata (filename, page number)
+  6. User asks: "Where did the cat sit?"
+  7. Embed question: [0.11, -0.33, 0.85, ...] (384 numbers)
+  8. Compare with stored vectors using cosine similarity
+  9. Chunk 1 matches best → retrieved as context
+  10. LLM reads context + question → answers "The cat sat on the mat"
+
+
+SECTION 4: INTERVIEW QUESTIONS & ANSWERS
+=========================================
+
+Q1: What is RAG?
+A: RAG stands for Retrieval-Augmented Generation. It's a technique that retrieves
+   relevant documents from a knowledge base and passes them as context to an LLM
+   to generate accurate, grounded answers. It prevents hallucination and allows
+   AI to answer questions from private/custom documents without retraining.
+
+Q2: Why use RAG instead of fine-tuning?
+A: RAG is cheaper, faster, and easier to update. Fine-tuning requires expensive GPU
+   training and needs to be redone whenever data changes. RAG just requires adding
+   new documents to the vector database.
+
+Q3: What is a vector database?
+A: A vector database stores numerical representations (embeddings) of text and
+   enables fast similarity search. Examples include ChromaDB, FAISS, and Pinecone.
+
+Q4: What is cosine similarity?
+A: Cosine similarity measures the angle between two vectors. A score of 1 means
+   identical direction (same meaning), 0 means perpendicular (unrelated), and
+   -1 means opposite meaning.
+
+Q5: What is the difference between semantic and keyword search?
+A: Keyword search matches exact words. Semantic search understands meaning using
+   vector embeddings, so "car" can match "automobile" or "vehicle."
+
+Q6: What is chunking in RAG?
+A: Chunking is splitting documents into smaller pieces so embeddings capture focused
+   meaning. Typical chunk size is 500-1000 characters with overlap of 100-200 characters
+   to preserve context across chunk boundaries.
+
+Q7: What is hallucination in LLMs?
+A: Hallucination is when an LLM generates confident-sounding but factually incorrect
+   information. RAG reduces hallucination by grounding answers in retrieved real documents.
+
+Q8: What tech stack did you use in your RAG project?
+A: I built an Enterprise RAG application using:
+   - LangChain for the RAG pipeline orchestration
+   - FastAPI for the REST API backend
+   - ChromaDB as the vector database
+   - nomic-embed-text for document embeddings
+   - Ollama with qwen2 for local LLM inference
+   - HTML/CSS/JavaScript for the frontend
+   The entire system runs locally with no API costs.
+
+
+SECTION 5: KEY TERMS GLOSSARY
+==============================
+
+Term              | Definition
+------------------|----------------------------------------------------------
+RAG               | Retrieval-Augmented Generation
+LLM               | Large Language Model (e.g., GPT-4, Gemini, LLaMA)
+Embedding         | Numerical vector representation of text meaning
+Vector DB         | Database optimized for storing and searching vectors
+Cosine Similarity | Measure of similarity between two vectors (0 to 1)
+Chunking          | Splitting documents into smaller pieces
+Retriever         | Component that fetches relevant chunks from vector DB
+Context Window    | Max text an LLM can process at once
+Hallucination     | LLM generating false but confident information
+Grounding         | Basing AI answers in real retrieved documents
+Semantic Search   | Search based on meaning using embeddings
+BM25              | Algorithm used in keyword/lexical search
+ANN Search        | Approximate Nearest Neighbor - fast vector search
+Top-k Retrieval   | Fetching the k most similar chunks for context
+Prompt Template   | Template used to format context + question for LLM
