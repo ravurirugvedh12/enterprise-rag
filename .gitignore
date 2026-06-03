@@ -17,3 +17,6 @@ backend/venv/
 chroma/
 vectorstore/
 db/
+# ChromaDB
+backend/chroma_db/
+chroma_db/
