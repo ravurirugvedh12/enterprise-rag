@@ -1,0 +1,157 @@
+ENTERPRISE RAG - COMPLETE PROJECT DOCUMENTATION
+================================================
+Full Technical Reference for Interview Preparation
+
+
+PROJECT NAME: Enterprise RAG
+FULL FORM: Enterprise Retrieval Augmented Generation
+TYPE: Full Stack AI Web Application
+PURPOSE: Upload company documents and ask questions using AI to get instant accurate answers
+
+
+WHAT IS THE PROJECT
+-------------------
+Enterprise RAG is a document intelligence system. Users upload PDF, DOCX, TXT, or Markdown files into the application. After uploading, they can type any question related to the document in a chat interface. The AI reads the document and gives a precise answer. It works completely offline on the local machine with no internet required and no API charges.
+
+
+THE PROBLEM IT SOLVES
+---------------------
+Companies, colleges, hospitals, and law firms have hundreds of documents. Employees waste hours searching through these documents manually. Enterprise RAG solves this by converting documents into a searchable AI knowledge base. Instead of reading 100 pages, you just ask a question and get the answer in seconds.
+
+
+USE CASES
+---------
+1. HR department - employees ask questions about company policies without reading full manuals
+2. Education - students upload notes and ask questions to study faster
+3. Legal firms - lawyers search contracts for specific clauses instantly
+4. Hospitals - doctors get drug information from medical guidelines quickly
+5. Manufacturing - engineers find solutions from machine manuals by asking questions
+6. Customer support - agents get product information instantly to answer customer queries
+
+
+PROJECT ARCHITECTURE
+--------------------
+The project has three main layers.
+
+Layer 1 is the Frontend. It is a single HTML file with CSS and JavaScript. The user sees a dark themed chat interface with a sidebar for uploading and managing documents. No frontend framework like React or Angular was used. Everything is plain HTML CSS and JavaScript.
+
+Layer 2 is the Backend. It is a FastAPI REST API written in Python. FastAPI handles all HTTP requests from the frontend. It receives uploaded files, sends them to the RAG engine for processing, and returns AI answers to the frontend.
+
+Layer 3 is the AI Pipeline. This is the RAG engine built using LangChain. It handles document loading, text splitting, embedding, vector storage, retrieval, and AI answer generation.
+
+The data flow is as follows. User uploads document to frontend. Frontend sends file to FastAPI backend via HTTP POST request. Backend saves file temporarily and passes it to the RAG engine. RAG engine loads the document, splits it into chunks, converts chunks to vector embeddings, and stores them in ChromaDB. When user asks a question, frontend sends question to backend. Backend calls RAG engine which converts the question to a vector, searches ChromaDB for similar chunks, retrieves top 5 chunks, and sends them along with the question to the Ollama LLM. Ollama generates an answer. Backend returns the answer to frontend. Frontend displays it in the chat.
+
+
+WHAT IS RAG
+-----------
+RAG stands for Retrieval Augmented Generation. It is a technique that combines information retrieval with AI text generation. Instead of asking the AI to answer from its training memory, we first retrieve relevant text from the uploaded documents and give it to the AI as context. The AI then generates an answer based on that context. This prevents the AI from making up wrong answers which is called hallucination. RAG is preferred over fine-tuning because it is cheaper, faster to implement, and easier to update. You just add new documents instead of retraining the whole model.
+
+
+WHAT IS A VECTOR EMBEDDING
+---------------------------
+A vector embedding is a list of numbers that represents the meaning of a piece of text. For example the sentence hello world might become something like 0.23, minus 0.14, 0.87, and so on with 768 numbers in total. The key idea is that sentences with similar meanings will have similar numbers. This allows the system to find relevant document chunks by comparing numbers instead of matching exact words. This is called semantic search. The embedding model used in this project is nomic-embed-text which runs locally via Ollama.
+
+
+WHAT IS SEMANTIC SEARCH
+------------------------
+Semantic search finds content based on meaning not exact word match. In traditional keyword search, searching for car only finds documents containing the word car. In semantic search, searching for car can also find documents talking about vehicle, automobile, or sedan because they have similar meanings. This is done by comparing vector embeddings using cosine similarity. Cosine similarity measures the angle between two vectors. A score of 1 means identical meaning. A score of 0 means no relation. In this project, when a user asks a question, the question is converted to a vector and compared with all stored document chunk vectors. The top 5 most similar chunks are retrieved.
+
+
+WHAT IS CHROMADB
+----------------
+ChromaDB is an open source vector database. It stores the vector embeddings of document chunks on disk in a folder called chroma_db. It supports fast similarity search to find the most relevant chunks when a question is asked. It also stores metadata along with each vector like the source filename and page number. ChromaDB was chosen because it is free, runs locally, needs no server setup, and is easy to integrate with LangChain.
+
+
+WHAT IS OLLAMA
+--------------
+Ollama is a tool that runs large language models locally on your own computer. It works like a local AI server running on port 11434. Instead of sending data to OpenAI or Google servers, the application sends questions to Ollama which processes them on the local machine. This means no API key is needed, no cost is incurred, no data leaves the machine, and the application works without internet. Ollama supports many models like LLaMA, Mistral, Qwen, and Phi.
+
+
+WHAT IS QWEN2 0.5B
+-------------------
+Qwen2 is an open source large language model made by Alibaba. The 0.5b means it has 500 million parameters. It is a small and fast model that runs on laptops with limited RAM. It needs only about 1 GB of RAM to run. In this project it is used as the AI that reads the retrieved document chunks and generates the answer to the user's question. For production with more powerful hardware, a larger model like LLaMA 3 or GPT-4 would give better answers.
+
+
+WHAT IS LANGCHAIN
+-----------------
+LangChain is a Python framework for building AI applications. It provides ready-made components for document loading, text splitting, embeddings, vector stores, retrievers, and LLM chains. In this project, LangChain connects all parts of the RAG pipeline. The key LangChain components used are RecursiveCharacterTextSplitter for splitting documents, OllamaEmbeddings for generating vector embeddings, Chroma for connecting to ChromaDB, RetrievalQA for the complete question answering chain, and PromptTemplate for formatting the question sent to the LLM.
+
+
+WHAT IS FASTAPI
+---------------
+FastAPI is a modern Python web framework for building REST APIs. It is faster than Flask and automatically generates API documentation at the /docs endpoint. In this project FastAPI exposes the following API endpoints. GET /health checks if the server is running. GET /stats returns total document and chunk count. POST /upload receives a file from the frontend and adds it to the knowledge base. GET /documents returns the list of all uploaded documents. DELETE /documents/id removes a document and all its chunks. POST /query receives a question and returns an AI generated answer.
+
+
+WHAT IS CHUNKING
+----------------
+Chunking is the process of splitting a large document into smaller pieces called chunks. This is necessary because LLMs have a limited context window, meaning they cannot process a very long document all at once. Also, embedding an entire document as one vector loses precision. Smaller chunks give more focused and accurate embeddings. In this project the chunk size is 1000 characters with an overlap of 200 characters. The overlap ensures that sentences at the boundary between two chunks are not cut off and context is preserved.
+
+
+RAG ENGINE CODE EXPLANATION
+----------------------------
+The rag_engine.py file contains the RAGEngine class which is the core of the application.
+
+The constructor initializes four things. First it sets up the OllamaEmbeddings object using nomic-embed-text model to convert text to vectors. Second it sets up ChatOllama with qwen2 model and temperature zero for consistent factual answers. Third it creates a RecursiveCharacterTextSplitter with chunk size 1000 and overlap 200. Fourth it connects to ChromaDB vector store in the chroma_db directory.
+
+The ingest_file method handles document uploads. It loads the file using the appropriate loader based on file extension. PyPDFLoader for PDF, Docx2txtLoader for DOCX, TextLoader for TXT, and UnstructuredMarkdownLoader for MD files. It adds metadata to each document including the source filename. Then it splits documents into chunks, generates a unique ID for each chunk using uuid, and adds them to ChromaDB. It also saves document metadata to a JSON file so document information persists after server restarts.
+
+The query method handles user questions. First it checks if the question mentions a specific document name and if so filters the search to only that document. Then it creates a retriever that fetches top 5 similar chunks from ChromaDB. It builds a RetrievalQA chain combining the LLM and retriever. It invokes the chain with the user question and gets the answer. If the user asked for bullet points or a numbered list, it automatically splits the answer into sentences and formats them as a numbered list. Finally it returns the answer and source information.
+
+The delete_document method removes a document by deleting all its chunk vectors from ChromaDB using the stored chunk IDs and then removes the document record from the metadata file.
+
+The stats method returns the total number of documents and chunks currently in the knowledge base.
+
+
+FRONTEND EXPLANATION
+--------------------
+The frontend is a single index.html file. It has a dark themed design with purple and blue accent colors. The left sidebar has a file upload area with drag and drop support, knowledge base statistics showing document and chunk count, and a list of indexed files with delete buttons. The right panel is a chat interface where users type questions and see AI responses. The settings button opens a modal. The chat input supports multi-line text and submits on Enter key. When the AI is thinking a loading animation with bouncing dots is shown. When bullet points are in the answer they are rendered with colored numbers. The frontend communicates with the backend using the JavaScript Fetch API to make HTTP requests.
+
+
+TECH STACK SUMMARY
+------------------
+Frontend: HTML5, CSS3, Vanilla JavaScript, Fetch API
+Backend: Python, FastAPI, Uvicorn
+AI Framework: LangChain
+LLM: Ollama with qwen2 0.5b model
+Embedding Model: nomic-embed-text
+Vector Database: ChromaDB
+Document Loaders: PyPDF, Docx2txt, LangChain Community
+Environment Config: python-dotenv
+ID Generation: uuid library
+
+
+KEY TECHNICAL DECISIONS AND WHY
+---------------------------------
+I chose Ollama over cloud APIs like Gemini or OpenAI because it runs locally with no cost and no quota limits. I chose ChromaDB because it is free, open source, and stores data on disk without needing a separate database server. I chose FastAPI over Flask because it is faster and has built-in data validation using Pydantic. I chose LangChain because it provides a complete RAG toolkit and reduces the amount of code needed to build the pipeline. I chose qwen2 0.5b because it is small enough to run on a laptop with limited RAM. Temperature is set to zero so the model gives consistent factual answers without randomness. Chunk overlap of 200 characters ensures that context is not lost at chunk boundaries.
+
+
+POSSIBLE IMPROVEMENTS FOR PRODUCTION
+-------------------------------------
+Replace ChromaDB with Pinecone or Weaviate for cloud-scale vector storage. Use a larger model like LLaMA 3 or GPT-4 for better answer quality. Add user authentication so different users have separate knowledge bases. Deploy the backend with Docker on AWS or GCP. Add support for more file types like Excel and PowerPoint. Implement conversation memory so the AI remembers previous questions in the chat. Add a hybrid search combining keyword search and semantic search for better accuracy.
+
+
+COMMON INTERVIEW QUESTIONS AND ANSWERS
+---------------------------------------
+Question: What is RAG?
+Answer: RAG stands for Retrieval Augmented Generation. It retrieves relevant document chunks first and passes them as context to the LLM to generate accurate answers. It prevents hallucination and allows AI to answer from private documents without retraining.
+
+Question: What is a vector embedding?
+Answer: A vector embedding is a list of numbers representing the meaning of text. Similar sentences have similar numbers. This enables semantic search which finds content by meaning not just exact word match.
+
+Question: What is the difference between semantic search and keyword search?
+Answer: Keyword search matches exact words. Semantic search understands meaning. So car can match vehicle or automobile in semantic search.
+
+Question: Why did you use Ollama?
+Answer: Ollama runs AI models locally with no API cost, no internet needed, and complete data privacy. Cloud APIs have rate limits and charge per request.
+
+Question: What is ChromaDB?
+Answer: ChromaDB is a vector database that stores document embeddings and enables fast similarity search to find relevant chunks for a given question.
+
+Question: What is chunking and why is it needed?
+Answer: Chunking splits documents into smaller pieces because LLMs have a limited context window and smaller chunks give more focused and accurate embeddings.
+
+Question: How would you scale this to production?
+Answer: I would replace ChromaDB with Pinecone, use a larger LLM like LLaMA 3, deploy with Docker on AWS, add authentication, and implement hybrid search.
+
+Question: What is your project name and use case?
+Answer: My project is Enterprise RAG. It is an AI powered document search system for businesses. Companies upload their internal documents and employees ask questions to get instant answers, saving hours of manual document searching.
